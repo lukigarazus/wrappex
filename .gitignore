@@ -1,0 +1,8 @@
+/node_modules
+/dist
+
+coverage/*
+!coverage/badge-statements.svg
+!coverage/badge-lines.svg
+!coverage/badge-functions.svg
+!coverage/badge-branches.svg
