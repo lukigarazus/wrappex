@@ -1,14 +1,42 @@
-export type ReturnTypo<T> = T & {
+export type Wrappex<T> = T & {
+  /**
+   * Returns a serialized version of the object.
+   */
   snapshot: any;
   disposed: boolean;
+  /**
+   * Makes all fields undefined.
+   */
   dispose: () => void;
+  /**
+   * Does't do anything at the moment.
+   */
   updateable: boolean;
   disableUpdates: () => void;
   enableUpdates: () => void;
+  /**
+   * This is just a utility function, it's not really in line with wrappex philosophy.
+   */
   addObservableKey: (key: string, value: any) => void;
-  clone: () => ReturnTypo<T>;
+  clone: () => Wrappex<T>;
+  /**
+   * returns modifier context object.
+   */
   getCtx: () => { [key: string]: any };
+  typename: string;
 };
+
+export type WrappexPlugin = readonly ((
+  pluginArgs: any,
+  args: InitialArguments<Record<string, any>, string[], Record<string, any>> &
+    unknown,
+  instanceMap: Map<string, any>
+) => (
+  obj: any
+) => {
+  objectModification: any;
+  reactionCallback: (field: string, value: any) => void;
+})[];
 
 // --------------------------------------------------------------------
 
@@ -48,10 +76,10 @@ export type ObjectFromGetters<T extends { [key: string]: any }> = {
   [key in KeyFromSetterAndGetter<keyof T>]: ReturnType<T[KeyToGetter<key>]>;
 };
 
-export type Getter<T, R> = (obj: ReturnTypo<T>, ctx: any) => R | null;
+export type Getter<T, R> = (obj: Wrappex<T>, ctx: any) => R | null;
 
 export type Setter<T, R> = (
-  obj: ReturnTypo<T>,
+  obj: Wrappex<T>,
   value: R | null,
   ctx: any
 ) => boolean;
@@ -76,11 +104,14 @@ export type SettersType<T> = T[Extract<keyof T, SettersFromUnion<keyof T>>];
 export interface InitialArguments<Type, Keys, Modifier> {
   fields: Keys;
   init: Type;
+  /**
+   * Modify all created objects.
+   */
   modifier?: Modifier;
   excludeFieldsFromUpdate?: Keys;
   typename: string;
-  checkFields?: Keys;
-  foreignFieldsMapping?: Partial<{ [key in keyof Type]: keyof Type }>;
+  // checkFields?: Keys;
+  // foreignFieldsMapping?: Partial<{ [key in keyof Type]: keyof Type }>;
 }
 
 export type UnionToIntersection<T> = (
@@ -92,3 +123,7 @@ export type UnionToIntersection<T> = (
 export type SafeFirstParameter<
   T extends (...args: any) => any
 > = Parameters<T>[0] extends undefined ? {} : Parameters<T>[0];
+
+export type LeftPrecedenceUnion<L, R> = L & Omit<R, keyof L>;
+
+// ------------------------------------------------------
